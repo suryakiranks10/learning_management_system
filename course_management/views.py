@@ -1,97 +1,41 @@
 from django.shortcuts import render,get_object_or_404
 
-# Create your views here.
-from rest_framework.generics import ListAPIView,CreateAPIView,UpdateAPIView
-from rest_framework.views import APIView
-from course_management.serializers import CourseSerializer
 from rest_framework import authentication,permissions
-from accounts.permissions import IsOwner
+from rest_framework.generics import ListCreateAPIView,RetrieveUpdateDestroyAPIView
+
+
 from course_management.models import Course
-from rest_framework.response import Response
+from course_management.serializers import CourseSerializer
 
-# class CourseListCreateView(ListAPIView):
-
-#     serializer_class = CourseSerializer
-
-#     authentication_classes=[authentication.TokenAuthentication]
-
-#     permission_classes=[permissions.IsAuthenticated]
-
-# # to get the courses of the trainer whos sending the request not every courses
-# #so only overriding the get_queryset rest all will be same only this will change
-#     def get_queryset(self):
-
-#         return Course.objects.filter(trainer=self.request.user)
+from accounts.permissions import IsOwner
 
 
-class CourseListCreateView(APIView):
+class CourseListCreateView(ListCreateAPIView):
+  
+    authentication_classes =[authentication.TokenAuthentication]
 
-    authentication_classes=[authentication.TokenAuthentication]
+    permission_classes =[permissions.IsAuthenticated]
 
-    permission_classes=[permissions.IsAuthenticated]
+    serializer_class = CourseSerializer
 
-    def get(self,request):
+# to get the courses of the trainer whos sending the request not every courses
+#so only overriding the get_queryset rest all will be same only this will change
+    def get_queryset(self):
+        return Course.objects.filter(trainer = self.request.user)
 
-        qs = Course.objects.filter(trainer=request.user)
+#when using createapiview there must be serializer class and overriding must be done to save xtra things like trainer wont be form data
+    def perform_create(self, serializer):
+        serializer.save(trainer = self.request.user)
 
-        serializer_instance = CourseSerializer(qs)
+   
+class CourseRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
-        return Response(serializer_instance.data)
-
-    def post(self,request):
-
-        form_data = request.data
-
-        serializer_instance = CourseSerializer(data=form_data)
-
-        if serializer_instance.is_valid():
-
-            serializer_instance.save(trainer=request.user)
-
-            return Response(serializer_instance.data)
-
-        else:
-
-            return Response(serializer_instance.errors)
-        
+    queryset = Course.objects.all()
     
-class CourseRetrieveUpdateDeleteView(APIView):
+    serializer_class = CourseSerializer
 
     authentication_classes =[authentication.TokenAuthentication]
 
     permission_classes =[IsOwner]
 
-    def get(self,request,pk=None):
-
-        qs = get_object_or_404(Course,id=pk)
-
-        serializer_instance = CourseSerializer(qs)
-
-        return Response(serializer_instance.data)
-
-    def put(self,request,pk=None):
-
-        form_data = request.data
-
-        instance = get_object_or_404(Course,id=pk)
-
-        serializer_instance = CourseSerializer(data=form_data,instance = instance)
-
-        if serializer_instance.is_valid():
-
-            serializer_instance.save()
-
-            return Response(serializer_instance.data)
-
-        else:
-
-            return Response(serializer_instance.errors)
-
-
-    def delete(self,request,pk=None):
-
-        instance = get_object_or_404(Course,id=pk)
-
-        instance.delete()
-
-        return Response({"message":"deleted"})
+  
