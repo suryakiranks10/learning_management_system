@@ -37,17 +37,22 @@ class Module(models.Model):
 
     def save(self, *args, **kwargs):
 
+# when creating module we dont pass id so only increment slug when id is not there
+#only works in module creation slug gets updated, we pass course id in url not module
+        if not self.id:
+
 # we take the module of whichever course is passed and take its last order and updates it by 1 to get the corct order        
-        module_instance = Module.objects.filter(course=self.course).last()
+            module_instance = Module.objects.filter(course=self.course).last()
 
-        if module_instance:
+            if module_instance:
 
-            self.order = module_instance.order + 1
-        else:
-            self.order = 1
+                self.order = module_instance.order + 1
+            else:
+                self.order = 1
 
-        if not self.slug:
-            self.slug = slugify(self.title)
+# when updating dont update the slug it remains constant
+            if not self.slug:
+                self.slug = slugify(self.title)
 
         super().save(*args, **kwargs)
 
