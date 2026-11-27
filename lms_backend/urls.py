@@ -19,6 +19,9 @@ from django.urls import path
 
 from accounts.views import TrainerSignupView
 
+from accounts.views import StudentSignupView
+from accounts.views import StudentProfileRetrieveUpdateView
+
 from rest_framework.authtoken.views import ObtainAuthToken
 
 from accounts.views import TrainerProfileRetrieveUpdateView
@@ -55,4 +58,8 @@ urlpatterns = [
     #lesson
     path("module/<int:pk>/lesson/",LessonCreateView.as_view()),
     path("lesson/<int:pk>/",LessonRetrieveUpdateDeleteView.as_view()),
+
+    #student
+    path("student/signup/",StudentSignupView.as_view()),
+    path("student/profile/",StudentProfileRetrieveUpdateView.as_view()),
 ]

@@ -1,18 +1,18 @@
 from django.shortcuts import render
 
 # Create your views here.
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView,RetrieveAPIView,UpdateAPIView
 from rest_framework.views import APIView
 
 from accounts.serializers import TrainerSerializer
 
 from rest_framework import authentication,permissions
 
-from accounts.models import TrainerProfile
-
-from accounts.serializers import TrainerProfileSerializer
-
+from accounts.models import TrainerProfile,StudentProfile
+from accounts.serializers import TrainerProfileSerializer,StudentProfileSerializer
 from rest_framework.response import Response
+
+from accounts.serializers import StudentSerializer
 
 class TrainerSignupView(CreateAPIView):
 
@@ -52,4 +52,24 @@ class TrainerProfileRetrieveUpdateView(APIView):
         else:
 
             return Response(serializer_instance.errors)
-        
+
+#==============Student======================
+
+class StudentSignupView(CreateAPIView):
+
+    serializer_class=StudentSerializer
+
+class StudentProfileRetrieveUpdateView(RetrieveAPIView,UpdateAPIView):
+
+    serializer_class = StudentProfileSerializer
+
+    authentication_classes=[authentication.TokenAuthentication]
+
+    permission_classes=[permissions.IsAuthenticated]
+
+# here we dont pass id as one stu has only one prof so we take the user filed of student models
+#  and take which user is passing its objcts and take that objects to retrieve update because of generic api
+    def get_object(self):
+
+        return StudentProfile.objects.get(user=self.request.user)
+    
